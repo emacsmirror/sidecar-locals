@@ -64,7 +64,7 @@
 ;; Custom Variables
 
 (defgroup sidecar-locals nil
-  "Fast, configurable spell checking of visible text, updated on a timer."
+  "Flexible local settings with support for out-of-source configuration."
   :group 'convenience)
 
 (defcustom sidecar-locals-ignore-modes nil
