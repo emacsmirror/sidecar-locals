@@ -58,7 +58,12 @@
 
 ;;; Code:
 
-(require 'subr-x)
+
+;; ---------------------------------------------------------------------------
+;; Require Dependencies
+
+(require 'subr-x) ;; For `string-empty-p'.
+
 
 ;; ---------------------------------------------------------------------------
 ;; Custom Variables
@@ -93,6 +98,7 @@ check this buffer.")
   "The directory name to discover sidecar-locals in."
   :group 'sidecar-locals
   :type 'string)
+
 
 ;; ---------------------------------------------------------------------------
 ;; Internal Generic Utilities
@@ -151,6 +157,7 @@ When PREDICATE is non-nil, use this function to test the path."
           (t
             (setq path nil)))))
     path-list))
+
 
 ;; ---------------------------------------------------------------------------
 ;; Internal Implementation Functions
@@ -288,6 +295,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
         (not (funcall sidecar-locals-ignore-buffer (current-buffer)))
         nil))))
 
+
 ;; ---------------------------------------------------------------------------
 ;; Public Functions
 
@@ -305,6 +313,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
           " found"
           "")))
     t))
+
 
 ;; ---------------------------------------------------------------------------
 ;; Define Minor Mode
