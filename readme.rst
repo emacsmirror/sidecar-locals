@@ -81,19 +81,35 @@ Customization
    a nil return value is used to disable.
 
 ``sidecar-locals-dir-name`` (``.sidecar-locals``)
-   The sub-directory to search for when detecting local settings.
+   The subdirectory to search for when detecting local settings.
 
 
 Details
 -------
 
 - Multiple ``.sidecar-locals`` paths are supported.
+
 - Multiple major-modes are supported (so ``c-mode`` will detect both ``c-mode`` and ``prog-mode``).
+
 - The execution order of locals is always least to most specific,
   so top-level locals are executed before those found further down the directory hierarchy.
   Derived modes such as ``prog-mode`` are executed before the major-mode that derived from them.
 
   This is done so it's possible to setup generic settings that can be overridden by more specific locations & modes.
+
+- Nested sub-directories in ``.sidecar-locals`` are supported,
+  you may mirror the directory structure of your project if you need subdirectories to have their own configuration.
+
+  For example:
+
+  .. code-block::
+
+     /src/
+     /src/my-project/
+     /src/my-project/external/
+     /src/.sidecar-locals/
+     /src/.sidecar-locals/my-project(c-mode).el
+     /src/.sidecar-locals/my-project/external(c-mode).el
 
 - This package doesn't conflict with ``dir-locals`` (which run beforehand).
 
