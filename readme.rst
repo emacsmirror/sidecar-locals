@@ -101,7 +101,7 @@ Details
 Security
 --------
 
-Since running code directly has implications for security, here are some hints for how to use this package safely.
+Since running code directly has security implications, here are some suggestions for how to use this package safely.
 
 For public projects it's recommended to create ``.sidecar-locals`` above the projects version control root,
 and only trust that directory.
@@ -109,8 +109,9 @@ and only trust that directory.
 This way any ``.sidecar-locals`` directories committed into the project will be detected and reported as untrusted
 (without running any code).
 
-For personal projects or any project where this is not a concern, you may add ``.sidecar-locals``
-anywhere in the project, recursively trusting the projects root using the ``*`` path suffix.
+For personal projects when you aren't concerned someone else creating a ``.sidecar-locals`` directory
+you may add ``.sidecar-locals`` anywhere in the project,
+recursively trusting the projects root using the ``*`` path suffix.
 
 
 Installation
