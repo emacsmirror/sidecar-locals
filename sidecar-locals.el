@@ -255,28 +255,40 @@ When NO-TEST is non-nil checking for existing paths is disabled."
         (while dir-tail-list
           ;; Slashes are ensured.
           (setq dir-iter (concat dir-iter (pop dir-tail-list)))
-          (let ((dir-iter-no-slash (directory-file-name dir-iter)))
-            (cond
-              ((or no-test (file-exists-p dir-iter))
-                ;; All modes.
-                (let ((file-test (concat dir-iter-no-slash "().el")))
-                  (when (or no-test (file-exists-p file-test))
-                    (funcall fn file-test)))
-                ;; Specific modes.
-                (dolist (mode major-mode-list)
-                  (let ((file-test (concat dir-iter-no-slash "(" (symbol-name mode) ").el")))
-                    (when (or no-test (file-exists-p file-test))
-                      (funcall fn file-test)))))
 
-              (t ;; Exit loop.
-                ;; There is no need to continue past a missing directory,
-                ;; as all it's subdirectories will be missing too.
-                (setq dir-tail-list nil)))))))))
+          (let ((dir-iter-no-slash (directory-file-name dir-iter)))
+            ;; All modes.
+            (let ((file-test (concat dir-iter-no-slash "().el")))
+              (when (or no-test (file-exists-p file-test))
+                (funcall fn file-test)))
+            ;; Specific modes.
+            (dolist (mode major-mode-list)
+              (let ((file-test (concat dir-iter-no-slash "(" (symbol-name mode) ").el")))
+                (when (or no-test (file-exists-p file-test))
+                  (funcall fn file-test)))))
+
+          (unless (or no-test (file-exists-p dir-iter))
+            ;; Exit loop.
+            ;; There is no need to continue past a missing directory,
+            ;; as all it's subdirectories will be missing too.
+            (setq dir-tail-list nil)))))))
 
 (defun sidecar-locals-hook ()
   "Load `sidecar-locals' files hook."
   (when (sidecar-locals-predicate)
-    (sidecar-locals--apply #'(lambda (filepath) (load filepath :nomessage t)) t)))
+    (sidecar-locals--apply
+      #'
+      (lambda (filepath)
+        (unless
+          (with-demoted-errors "sidecar-locals: %S"
+            ;; Errors here cause the file not to open,
+            ;; report them as messages instead.
+            (load filepath :nomessage t)
+            t)
+          ;; Including the filename is complicated, just report two errors.
+          (message "sidecar-locals: error running %S (see previous error)" filepath)))
+      ;; Only run for files that exist.
+      nil)))
 
 (defun sidecar-locals-predicate ()
   "Check if `sidecar-locals' should run."
