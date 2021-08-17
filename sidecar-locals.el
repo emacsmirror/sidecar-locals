@@ -142,17 +142,15 @@ For example: '/a/b/c' explodes to ('/' 'a/' 'b/' 'c/')"
       (setq mode (get mode 'derived-mode-parent)))
     mode-list))
 
-(defun sidecar-locals--locate-dominating-files (path locate &optional predicate)
+(defun sidecar-locals--locate-dominating-files (path locate)
   "Return a list of paths, the parent of PATH containing LOCATE.
-Start with the top-most path.
-When PREDICATE is non-nil, use this function to test the path."
+Start with the top-most path."
   (let ((path-list (list)))
     (while path
       (let ((test (locate-dominating-file path locate)))
         (cond
           (test
-            (when (or (null predicate) (funcall predicate test))
-              (push test path-list))
+            (push test path-list)
             (setq path (sidecar-locals--parent-dir-or-nil test)))
           (t
             (setq path nil)))))
@@ -162,7 +160,7 @@ When PREDICATE is non-nil, use this function to test the path."
 ;; ---------------------------------------------------------------------------
 ;; Internal Implementation Functions
 
-(defun sidecar-locals-trusted-p (dir)
+(defun sidecar-locals--trusted-p (dir)
   "Check if DIR should be trusted (including any of it's parent directories).
 
 Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
@@ -194,8 +192,29 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
       (setq is-first nil))
     result))
 
-(defun sidecar-locals--apply (fn no-test)
-  "Run FN on all files in `.sidecar-locals' that match the major modes.
+(defun sidecar-locals--trusted-p-with-warning (dir)
+  "Check if DIR should be trusted, warn if it's not configured."
+  (let ((trust (sidecar-locals--trusted-p dir)))
+    (cond
+      ((eq trust 1)
+        t)
+      ((eq trust -1)
+        nil)
+      (t
+        (progn
+          (message
+            (concat
+              "sidecar-locals: un-trusted path %S, "
+              "add to `sidecar-locals-paths-allow' or `sidecar-locals-paths-deny' "
+              "to determine the trust setting silence this message.")
+            dir)
+          nil)))))
+
+(defun sidecar-locals--apply (cwd mode-base fn no-test)
+  "Run FN on all files in `.sidecar-locals' in CWD.
+
+Argument MODE-BASE is typically the current major mode.
+This mode and any modes it derives from are scanned.
 
 Order is least to most specific, so the files closest to the root run first,
 and non `major-mode' files run first,
@@ -203,33 +222,24 @@ with functions closest to the files & mode specific.
 
 When NO-TEST is non-nil checking for existing paths is disabled."
   (let*
-    (
-      (major-mode-list (sidecar-locals--all-major-modes-as-list major-mode))
-      (cwd (file-name-directory (buffer-file-name))))
+    ( ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
+      (dominating-files
+        (delete nil
+          (mapcar
+            (lambda (dir-base)
+              (if (sidecar-locals--trusted-p-with-warning dir-base)
+                (file-name-as-directory dir-base)
+                nil))
+            (sidecar-locals--locate-dominating-files cwd sidecar-locals-dir-name))))
+
+      ;; Only create this list if there are known directories to scan.
+      (major-mode-list
+        (if dominating-files
+          (sidecar-locals--all-major-modes-as-list mode-base)
+          nil)))
 
     ;; Support multiple `sidecar-locals' parent paths.
-    (dolist
-      (dir-base
-        (sidecar-locals--locate-dominating-files
-          cwd sidecar-locals-dir-name
-          #'
-          (lambda (dir-test)
-            (let ((trust (sidecar-locals-trusted-p dir-test)))
-              (cond
-                ((eq trust 1)
-                  t)
-                ((eq trust -1)
-                  nil)
-                (t
-                  (progn
-                    (message
-                      (concat
-                        "sidecar-locals: un-trusted path %S, "
-                        "add to `sidecar-locals-paths-allow' or `sidecar-locals-paths-deny' "
-                        "to determine the trust setting silence this message.")
-                      dir-test)
-                    nil)))))))
-      (setq dir-base (file-name-as-directory dir-base))
+    (dolist (dir-base dominating-files)
       (let*
         (
           (dir-root (concat dir-base (file-name-as-directory sidecar-locals-dir-name)))
@@ -277,6 +287,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   "Load `sidecar-locals' files hook."
   (when (sidecar-locals-predicate)
     (sidecar-locals--apply
+      (file-name-directory (buffer-file-name)) major-mode
       #'
       (lambda (filepath)
         ;; Errors here cause the file not to open,
@@ -314,6 +325,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   (interactive)
   (message "Finding candidates for locals files:")
   (sidecar-locals--apply
+    (file-name-directory (buffer-file-name)) major-mode
     #'
     (lambda (filepath)
       (message
