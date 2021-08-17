@@ -321,6 +321,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
         (if (file-exists-p filepath)
           " found"
           "")))
+    ;; Run for all files & directories (even if they don't exist).
     t))
 
 
