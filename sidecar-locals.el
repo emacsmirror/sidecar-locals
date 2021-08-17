@@ -279,14 +279,11 @@ When NO-TEST is non-nil checking for existing paths is disabled."
     (sidecar-locals--apply
       #'
       (lambda (filepath)
-        (unless
-          (with-demoted-errors "sidecar-locals: %S"
-            ;; Errors here cause the file not to open,
-            ;; report them as messages instead.
-            (load filepath :nomessage t)
-            t)
-          ;; Including the filename is complicated, just report two errors.
-          (message "sidecar-locals: error running %S (see previous error)" filepath)))
+        ;; Errors here cause the file not to open,
+        ;; report them as messages instead.
+        (condition-case-unless-debug err
+          (load filepath :nomessage t)
+          (error (message "sidecar-locals: error %S in %S" err filepath))))
       ;; Only run for files that exist.
       nil)))
 
