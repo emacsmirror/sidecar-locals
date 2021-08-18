@@ -136,7 +136,6 @@ Installation
 .. code-block:: elisp
 
    (use-package sidecar-locals
-     :commands (sidecar-locals-mode)
      :straight
      (sidecar-locals
        :type git
