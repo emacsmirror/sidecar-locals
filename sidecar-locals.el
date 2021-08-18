@@ -72,11 +72,6 @@
   "Flexible local settings with support for out-of-source configuration."
   :group 'convenience)
 
-(defcustom sidecar-locals-ignore-modes nil
-  "List of major-modes to exclude when `sidecar-locals' has been enabled globally."
-  :type '(repeat symbol)
-  :group 'sidecar-locals)
-
 (defcustom sidecar-locals-paths-allow nil
   "List of trusted paths (must contain trailing slashes)."
   :type '(repeat string)
@@ -87,8 +82,13 @@
   :type '(repeat string)
   :group 'sidecar-locals)
 
+(defcustom sidecar-locals-ignore-modes nil
+  "List of major-modes where `sidecar-locals' won't be used."
+  :type '(repeat symbol)
+  :group 'sidecar-locals)
+
 (defvar sidecar-locals-ignore-buffer nil
-  "When non-nil, Global `sidecar-locals' won't be used for this buffer.
+  "When non-nil, `sidecar-locals' won't be used for this buffer.
 This variable can also be a predicate function, in which case
 it'll be called with one parameter (the buffer in question), and
 it should return non-nil to make Global `sidecar-locals' Mode not
