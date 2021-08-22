@@ -9,15 +9,28 @@ This is a global minor mode that provides a flexible alternative to Emacs built-
 Motivation
 ==========
 
-The motivation for this project was to be able to conveniently configure projects without having to commit
-personal configuration into ``dir-locals.el`` which is not always appropriate for larger projects.
+The motivation for this project was to be able to conveniently configure projects.
 
-Or alternatively having local ``dir-locals.el`` files scattered around the source directory,
-which can't be easily versioned and can complicate operations such as bisecting or switching branches
-directories won't be properly removed if they contain files not tracked by the version control.
+The main differences between this package and ``dir-locals`` are:
 
-Similar to out-of-source builds, this package supports out-of-source locals so your source repository
-can be kept pristine and your configuration can be stored and versioned separately.
+Code Execution
+   Unlike dir-locals which requires ``(eval ...)`` blocks which need to be explicitly trusted.
+
+   This package runs the emacs-lisp directly,
+   since trust is manged at the path level instead of individual variables.
+
+   While both methods are valid, executing code directly is more convenient when the code contains project-level logic
+   (where every change to the code doesn't require re-trusting, continually growing the ``custom.el`` file).
+
+Out of Source Configuration
+   Storing personal configuration in ``dir-locals.el`` is not always appropriate for larger projects.
+
+   Or alternatively having local ``dir-locals.el`` files scattered around the source directory,
+   which can't be easily versioned and can complicate operations such as bisecting or switching branches
+   directories won't be properly removed if they contain files not tracked by the version control.
+
+   Similar to out-of-source builds, this package supports out-of-source locals so your source repository
+   can be kept pristine and your configuration can be stored and versioned separately.
 
 
 An example of what the directory layout might look like where ``/src/my-project`` and ``/src/other-project/`` are two
