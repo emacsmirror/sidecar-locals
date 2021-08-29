@@ -148,11 +148,5 @@ Installation
 
 .. code-block:: elisp
 
-   (use-package sidecar-locals
-     :straight
-     (sidecar-locals
-       :type git
-       :host gitlab
-       :repo "ideasman42/emacs-sidecar-locals"))
-
+   (use-package sidecar-locals)
    (sidecar-locals-mode)
