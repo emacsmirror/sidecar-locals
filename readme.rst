@@ -9,7 +9,7 @@ This is a global minor mode that provides a flexible alternative to Emacs built-
 Motivation
 ==========
 
-The motivation for this project was to be able to conveniently configure projects.
+The motivation for sidecar-locals is to conveniently configure projects without being limited to changing variables.
 
 The main differences between this package and ``dir-locals`` are:
 
@@ -104,9 +104,10 @@ Details
 
 - Multiple major-modes are supported (so ``c-mode`` will detect both ``c-mode`` and ``prog-mode``).
 
-- The execution order of locals is always least to most specific,
-  so top-level locals are executed before those found further down the directory hierarchy.
-  Derived modes such as ``prog-mode`` are executed before the major-mode that derived from them.
+- The execution order of locals is always least to most specific.
+
+  - Top-level locals are executed before those found further down the directory hierarchy.
+  - Derived modes such as ``prog-mode`` are executed before the major-mode that derived from them.
 
   This is done so it's possible to setup generic settings that can be overridden by more specific locations & modes.
 
