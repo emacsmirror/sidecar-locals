@@ -144,6 +144,30 @@ you may add ``.sidecar-locals`` anywhere in the project,
 recursively trusting the projects root using the ``*`` path suffix.
 
 
+Tips
+----
+
+Deferred Loading
+   When setting options for packages, you may want to add each configuration in a
+   ``(with-eval-after-load 'name-of-package ...)`` block.
+
+   This avoids any problems caused by the configuration running before the package is loaded.
+
+Share Logic Between Modes
+   Having two or more modes share logic can be done by creating a file and pointing both the major modes to this file.
+
+   .. code-block:: elisp
+
+      ;; Shared code for C-like languages.
+      (let ((path (file-name-directory load-file-name)))
+        (load (concat path "my_project(c-mode-generic).el") :nomessage t))
+
+   The contents above can be written to:
+   ``my_project(c-mode).el``, ``my_project(c++-mode).el`` and ``my_project(objc-mode).el``.
+
+   Any mode specific logic can be added into these file as needed.
+
+
 Installation
 ============
 
