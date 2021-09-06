@@ -156,6 +156,22 @@ Start with the top-most path."
             (setq path nil)))))
     path-list))
 
+(defun sidecar-locals--canonicalize-path (path)
+  "Return the canonical PATH (without adjusting trailing slashes or following links)."
+  ;; Some pre-processing on `path' since it may contain the user path
+  ;; or be relative to the default directory.
+  ;;
+  ;; Notes:
+  ;; - This is loosely based on `f-same?'` from the `f' library.
+  ;;   However it's important this only runs on the user directory and NOT trusted directories
+  ;;   since there should never be any ambiguity (which could be caused by expansion)
+  ;;   regarding which path is trusted.
+  ;; - Avoid `file-truename' since this follows symbolic-links,
+  ;;   `expand-file-name' handles `~` and removing `/../' from paths.
+  (let ((file-name-handler-alist nil))
+    ;; Expand user `~' and default directory.
+    (expand-file-name path)))
+
 
 ;; ---------------------------------------------------------------------------
 ;; Internal Implementation Functions
@@ -170,6 +186,9 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
   ;; - "/a/b/*"
   ;; - "/a/*"
   ;; - "/*"
+
+  ;; Note that `dir' should be derived from a path that has been processed using
+  ;; `sidecar-locals--canonicalize-path' to ensure the comparisons are valid.
   (let
     (
       (result nil)
@@ -220,6 +239,10 @@ and non `major-mode' files run first,
 with functions closest to the files & mode specific.
 
 When NO-TEST is non-nil checking for existing paths is disabled."
+
+  ;; Ensure comparisons with `sidecar-locals--trusted-p' occur on an expanded path.
+  (setq cwd (sidecar-locals--canonicalize-path cwd))
+
   (let*
     ( ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
       (dominating-files
