@@ -338,24 +338,69 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
 
 ;; ---------------------------------------------------------------------------
+;; Internal Report Buffer
+
+(defun sidecar-locals--buffer-insert-filepath (filepath map)
+  "Insert FILEPATH as a clickable link using key-map MAP in a buffer."
+  (let ((p1 (point)))
+    (insert filepath)
+    (add-text-properties
+      p1 (point)
+      `
+      (mouse-face
+        highlight
+        help-echo
+        "click to visit this file in other window"
+        keymap
+        ,map
+        loc
+        ,filepath))
+    (insert "\n")))
+
+(defun sidecar-locals--buffer-find-file-on-click (event)
+  "Called when a file-path is clicked (access the click from EVENT)."
+  (interactive "e")
+  (let*
+    (
+      (pos (posn-point (event-end event)))
+      (loc (get-text-property pos 'loc)))
+    (find-file loc)))
+
+(defun sidecar-locals--buffer-report-impl ()
+  "Implementation of `sidecar-locals-report'."
+  (let
+    (
+      (buf (get-buffer-create "*sidecar-locals-report*"))
+      (filepath (buffer-file-name))
+      (map (make-sparse-keymap)))
+    (unless filepath
+      (error "Your buffer is not associated with a file, no sidecar-locals apply"))
+    (define-key map [mouse-2] 'sidecar-locals--buffer-find-file-on-click)
+    (define-key map [mouse-1] 'sidecar-locals--buffer-find-file-on-click)
+
+    (with-current-buffer buf
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      (insert "Sidecar locals applicable to\n " filepath "\n (click to edit, q to quit)\n\n"))
+    (sidecar-locals--apply
+      (file-name-directory filepath) major-mode
+      (lambda (filepath)
+        (with-current-buffer buf (sidecar-locals--buffer-insert-filepath filepath map)))
+      t)
+    (pop-to-buffer buf)
+    (view-mode-enter nil (lambda (buf) (kill-buffer buf)))))
+
+
+;; ---------------------------------------------------------------------------
 ;; Public Functions
 
 ;;;###autoload
 (defun sidecar-locals-report ()
-  "Report the paths that are used to detect locals."
-  (interactive)
-  (message "Finding candidates for locals files:")
-  (sidecar-locals--apply
-    (file-name-directory (buffer-file-name)) major-mode
-    (lambda (filepath)
-      (message
-        "- %S%s" filepath
-        (if (file-exists-p filepath)
-          " found"
-          "")))
-    ;; Run for all files & directories (even if they don't exist).
-    t))
+  "Report paths that are used to detect locals.
 
+This creates a buffer with links that visit that file."
+  (interactive)
+  (sidecar-locals--buffer-report-impl))
 
 ;; ---------------------------------------------------------------------------
 ;; Define Minor Mode
