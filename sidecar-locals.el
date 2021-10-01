@@ -157,7 +157,9 @@ Start with the top-most path."
     path-list))
 
 (defun sidecar-locals--canonicalize-path (path)
-  "Return the canonical PATH (without adjusting trailing slashes or following links)."
+  "Return the canonical PATH.
+
+This is done without adjusting trailing slashes or following links."
   ;; Some pre-processing on `path' since it may contain the user path
   ;; or be relative to the default directory.
   ;;
