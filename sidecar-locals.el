@@ -127,9 +127,11 @@ For example: '/a/b/c' explodes to ('/' 'a/' 'b/' 'c/')"
     (while dir
       (let ((parent (sidecar-locals--parent-dir-or-nil-with-slash dir)))
         (push
-          (if parent
-            (substring dir (length parent))
-            dir)
+          (cond
+            (parent
+              (substring dir (length parent)))
+            (t
+              dir))
           paths)
         (setq dir parent)))
     paths))
@@ -199,9 +201,11 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
       (let
         (
           (dir-test
-            (if is-first
-              dir
-              (concat dir "*"))))
+            (cond
+              (is-first
+                dir)
+              (t
+                (concat dir "*")))))
         (cond
           ((member dir-test sidecar-locals-paths-deny)
             (setq result -1))
@@ -251,16 +255,20 @@ When NO-TEST is non-nil checking for existing paths is disabled."
         (delete nil
           (mapcar
             (lambda (dir-base)
-              (if (sidecar-locals--trusted-p-with-warning dir-base)
-                (file-name-as-directory dir-base)
-                nil))
+              (cond
+                ((sidecar-locals--trusted-p-with-warning dir-base)
+                  (file-name-as-directory dir-base))
+                (t
+                  nil)))
             (sidecar-locals--locate-dominating-files cwd sidecar-locals-dir-name))))
 
       ;; Only create this list if there are known directories to scan.
       (major-mode-list
-        (if dominating-files
-          (sidecar-locals--all-major-modes-as-list mode-base)
-          nil)))
+        (cond
+          (dominating-files
+            (sidecar-locals--all-major-modes-as-list mode-base))
+          (t
+            nil))))
 
     ;; Support multiple `sidecar-locals' parent paths.
     (dolist (dir-base dominating-files)
@@ -334,9 +342,11 @@ When NO-TEST is non-nil checking for existing paths is disabled."
     ;; Optionally check if a function is used.
     (or
       (null sidecar-locals-ignore-buffer)
-      (if (functionp sidecar-locals-ignore-buffer)
-        (not (funcall sidecar-locals-ignore-buffer (current-buffer)))
-        nil))))
+      (cond
+        ((functionp sidecar-locals-ignore-buffer)
+          (not (funcall sidecar-locals-ignore-buffer (current-buffer))))
+        (t
+          nil)))))
 
 
 ;; ---------------------------------------------------------------------------
