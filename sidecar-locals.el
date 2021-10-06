@@ -74,18 +74,15 @@
 
 (defcustom sidecar-locals-paths-allow nil
   "List of trusted paths (must contain trailing slashes)."
-  :type '(repeat string)
-  :group 'sidecar-locals)
+  :type '(repeat string))
 
 (defcustom sidecar-locals-paths-deny nil
   "List of untrusted paths (must contain trailing slashes)."
-  :type '(repeat string)
-  :group 'sidecar-locals)
+  :type '(repeat string))
 
 (defcustom sidecar-locals-ignore-modes nil
   "List of major-modes where `sidecar-locals' won't be used."
-  :type '(repeat symbol)
-  :group 'sidecar-locals)
+  :type '(repeat symbol))
 
 (defvar sidecar-locals-ignore-buffer nil
   "When non-nil, `sidecar-locals' won't be used for this buffer.
@@ -96,7 +93,7 @@ check this buffer.")
 
 (defcustom sidecar-locals-dir-name ".sidecar-locals"
   "The directory name to discover sidecar-locals in."
-  :group 'sidecar-locals
+
   :type 'string)
 
 
@@ -435,7 +432,6 @@ This creates a buffer with links that visit that file."
 ;;;###autoload
 (define-minor-mode sidecar-locals-mode
   "Toggle variable `sidecar-locals-mode' in the current buffer."
-  :group 'sidecar-locals
   :global t
 
   (cond
