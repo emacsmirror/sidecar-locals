@@ -352,6 +352,10 @@ When NO-TEST is non-nil checking for existing paths is disabled."
         ,map
         loc
         ,filepath))
+
+    (when (file-exists-p filepath)
+      (insert " [found]"))
+
     (insert "\n")))
 
 (defun sidecar-locals--buffer-find-file-on-click (event)
