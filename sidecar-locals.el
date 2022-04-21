@@ -339,22 +339,27 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
 (defun sidecar-locals--buffer-insert-filepath (filepath map)
   "Insert FILEPATH as a clickable link using key-map MAP in a buffer."
-  (let ((p1 (point)))
-    (insert filepath)
-    (add-text-properties
-      p1 (point)
-      `
-      (mouse-face
-        highlight
-        help-echo
+  (let ((found (file-exists-p filepath)))
+    (insert
+      (propertize
+        filepath
+        'face
+        (cond
+          (found
+            'success)
+          (t
+            'default))
+        'mouse-face
+        'highlight
+        'help-echo
         "click to visit this file in other window"
-        keymap
-        ,map
-        loc
-        ,filepath))
+        'keymap
+        map
+        'loc
+        filepath))
 
-    (when (file-exists-p filepath)
-      (insert " [found]"))
+    (when found
+      (insert (propertize " [found]" 'face 'success)))
 
     (insert "\n")))
 
@@ -382,7 +387,10 @@ When NO-TEST is non-nil checking for existing paths is disabled."
     (with-current-buffer buf
       (setq buffer-read-only nil)
       (erase-buffer)
-      (insert "Sidecar locals applicable to\n " filepath "\n (click to edit, q to quit)\n\n"))
+      (insert (propertize "Sidecar locals applicable to:" 'face 'font-lock-doc-face) "\n")
+      (insert filepath "\n\n")
+      (insert (propertize "Click to edit, q to quit:\n" 'face 'font-lock-doc-face)))
+
     (sidecar-locals--apply
       (file-name-directory filepath) major-mode
       (lambda (filepath)
