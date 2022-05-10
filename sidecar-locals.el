@@ -5,7 +5,7 @@
 
 ;; Author: Campbell Barton <ideasman42@gmail.com>
 
-;; URL: https://codeberg.com/ideasman42/emacs-sidecar-locals
+;; URL: https://codeberg.org/ideasman42/emacs-sidecar-locals
 ;; Keywords: convenience
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1"))
@@ -363,14 +363,6 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
     (insert "\n")))
 
-(defun sidecar-locals--buffer-find-file-on-click (event)
-  "Called when a file-path is clicked (access the click from EVENT)."
-  (interactive "e")
-  (let*
-    (
-      (pos (posn-point (event-end event)))
-      (loc (get-text-property pos 'loc)))
-    (find-file loc)))
 
 (defun sidecar-locals--buffer-report-impl ()
   "Implementation of `sidecar-locals-report'."
@@ -378,11 +370,21 @@ When NO-TEST is non-nil checking for existing paths is disabled."
     (
       (buf (get-buffer-create "*sidecar-locals-report*"))
       (filepath (buffer-file-name))
-      (map (make-sparse-keymap)))
+      (map (make-sparse-keymap))
+
+      ;; Called when a file-path is clicked (access the click from EVENT).
+      (buffer-find-file-on-click-fn
+        (lambda (event)
+          (interactive "e")
+          (let*
+            (
+              (pos (posn-point (event-end event)))
+              (loc (get-text-property pos 'loc)))
+            (find-file loc)))))
     (unless filepath
       (error "Your buffer is not associated with a file, no sidecar-locals apply"))
-    (define-key map [mouse-2] 'sidecar-locals--buffer-find-file-on-click)
-    (define-key map [mouse-1] 'sidecar-locals--buffer-find-file-on-click)
+    (define-key map [mouse-2] buffer-find-file-on-click-fn)
+    (define-key map [mouse-1] buffer-find-file-on-click-fn)
 
     (with-current-buffer buf
       (setq buffer-read-only nil)
