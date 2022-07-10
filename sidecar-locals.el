@@ -107,7 +107,7 @@ check this buffer.")
 (defun sidecar-locals--path-explode (dir)
   "Explodes directory DIR.
 
-For example: '/a/b/c' explodes to ('/' 'a/' 'b/' 'c/')"
+For example: \"/a/b/c\" explodes to (\"/\" \"a/\" \"b/\" \"c/\")"
   (let ((paths (list)))
     (while dir
       (let ((parent (sidecar-locals--parent-dir-or-nil-with-slash dir)))
