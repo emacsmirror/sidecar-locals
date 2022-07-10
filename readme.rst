@@ -23,15 +23,18 @@ Code Execution
    (where every change to the code doesn't require re-trusting, continually growing the ``custom.el`` file).
 
 Out of Source Configuration
-   Storing personal configuration in ``dir-locals.el`` is not always appropriate for larger projects.
-
-   Or alternatively having local ``dir-locals.el`` files scattered around the source directory,
-   which can't be easily versioned and can complicate operations such as bisecting or switching branches
-   directories won't be properly removed if they contain files not tracked by the version control.
+   Support for configuration outside the project's root directly.
 
    Similar to out-of-source builds, this package supports out-of-source locals so your source repository
    can be kept pristine and your configuration can be stored and versioned separately.
 
+   This is useful since storing personal configuration in ``dir-locals.el`` may not be appropriate for larger projects.
+
+   Having local ``dir-locals.el`` files scattered around the source directory can be inconvenient:
+
+   - These files can't be versioned conveniently.
+   - Operations such as bisecting or switching branches are complicated when
+     directories that would be removed contain files not tracked by a version control system.
 
 An example of what the directory layout might look like where ``/src/my-project`` and ``/src/other-project/`` are two
 version controlled repositories:
