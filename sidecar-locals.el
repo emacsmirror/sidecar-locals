@@ -137,6 +137,8 @@ Start with the top-most path."
       (let ((test (locate-dominating-file path locate)))
         (cond
           (test
+            ;; Without this, files in the home directory will start with `~/`.
+            (setq test (sidecar-locals--canonicalize-path test))
             (push test path-list)
             (setq path (sidecar-locals--parent-dir-or-nil test)))
           (t
