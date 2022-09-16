@@ -255,7 +255,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
           (mapcar
             (lambda (dir-base)
               (cond
-                ((sidecar-locals--trusted-p-with-warning dir-base)
+                ((or no-test (sidecar-locals--trusted-p-with-warning dir-base))
                   (file-name-as-directory dir-base))
                 (t
                   nil)))
