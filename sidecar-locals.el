@@ -48,12 +48,6 @@
 
 
 ;; ---------------------------------------------------------------------------
-;; Require Dependencies
-
-(require 'subr-x) ;; For `string-empty-p'.
-
-
-;; ---------------------------------------------------------------------------
 ;; Custom Variables
 
 (defgroup sidecar-locals nil
@@ -301,7 +295,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
         ;; Happens if the filename is in the same directory as the `sidecar-locals-dir-name'.
         ;; Discard the empty string in this case.
-        (when (and dir-tail-list (string-empty-p (car dir-tail-list)))
+        (when (and dir-tail-list (string-equal "" (car dir-tail-list)))
           (pop dir-tail-list))
 
         (while dir-tail-list
