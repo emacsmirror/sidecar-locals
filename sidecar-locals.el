@@ -437,19 +437,19 @@ This creates a buffer with links that visit that file."
 
 
 (defun sidecar-locals-mode-enable ()
-  "Turn on option `sidecar-locals-mode' for the current buffer."
+  "Turn on option `sidecar-locals-mode' globally."
 
   (add-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil nil)
   (add-hook 'find-file-hook #'sidecar-locals-hook nil nil))
 
 (defun sidecar-locals-mode-disable ()
-  "Turn off option `sidecar-locals-mode' for the current buffer."
+  "Turn off option `sidecar-locals-mode' globally."
   (remove-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil)
   (remove-hook 'find-file-hook #'sidecar-locals-hook nil))
 
 ;;;###autoload
 (define-minor-mode sidecar-locals-mode
-  "Toggle variable `sidecar-locals-mode' in the current buffer."
+  "Toggle variable `sidecar-locals-mode' globally."
   :global t
 
   (cond
