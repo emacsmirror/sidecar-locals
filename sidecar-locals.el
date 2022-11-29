@@ -474,14 +474,13 @@ This creates a buffer with links that visit that file."
 ;; Developer note, use global hooks since these run before buffers are loaded.
 ;; Each function checks if the local mode is active before operating.
 
-
-(defun sidecar-locals-mode-enable ()
+(defun sidecar-locals--mode-enable ()
   "Turn on option `sidecar-locals-mode' globally."
   (setq sidecar-locals--last-checked-paths nil)
   (add-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil nil)
   (add-hook 'find-file-hook #'sidecar-locals-hook nil nil))
 
-(defun sidecar-locals-mode-disable ()
+(defun sidecar-locals--mode-disable ()
   "Turn off option `sidecar-locals-mode' globally."
   (setq sidecar-locals--last-checked-paths nil)
   (remove-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil)
@@ -494,9 +493,9 @@ This creates a buffer with links that visit that file."
 
   (cond
     (sidecar-locals-mode
-      (sidecar-locals-mode-enable))
+      (sidecar-locals--mode-enable))
     (t
-      (sidecar-locals-mode-disable))))
+      (sidecar-locals--mode-disable))))
 
 (provide 'sidecar-locals)
 ;;; sidecar-locals.el ends here
