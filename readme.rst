@@ -5,6 +5,8 @@ SideCar Locals
 
 This is a global minor mode that provides a flexible alternative to Emacs built-in ``dir-locals`` functionality.
 
+Available via `melpa <https://melpa.org/#/sidecar-locals>`__.
+
 
 Motivation
 ==========
