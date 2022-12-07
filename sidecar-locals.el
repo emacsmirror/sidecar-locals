@@ -366,10 +366,14 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   (let ((has-error nil))
     (dolist (var (list 'sidecar-locals-paths-allow 'sidecar-locals-paths-deny))
       (dolist (path (symbol-value var))
-        (let ((path-as-dir (file-name-as-directory path)))
-          (unless (string-equal path path-as-dir)
-            (message "sidecar-locals: %s path must end with a slash %S" (symbol-name var) path)
-            (setq has-error t)))))
+        (let ((path-no-star (string-remove-suffix "*" path)))
+          (let ((path-no-star-as-dir (file-name-as-directory path-no-star)))
+            (unless (string-equal path-no-star path-no-star-as-dir)
+              (message
+                "sidecar-locals: %s path must end with a slash (and optional \"*\"): %S"
+                (symbol-name var)
+                path)
+              (setq has-error t))))))
     has-error))
 
 (defun sidecar-locals--report-malformed-paths-once ()
