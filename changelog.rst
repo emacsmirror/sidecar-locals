@@ -4,6 +4,10 @@ Change Log
 ##########
 
 
+- 2022-12-08
+  - Add support for non-file buffers such as ``dired``, so changing directories may run sidecar-locals,
+    matching dir-locals behavior.
+
 - 2022-09-16
   - Show all potential sidecar-locals files in ``sidecar-locals-report`` without checking their trust status.
   - Fix accessing files under the HOME directory.

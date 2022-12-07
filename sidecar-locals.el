@@ -319,25 +319,6 @@ When NO-TEST is non-nil checking for existing paths is disabled."
             ;; as all it's subdirectories will be missing too.
             (setq dir-tail-list nil)))))))
 
-(defun sidecar-locals-hook ()
-  "Load `sidecar-locals' files hook."
-  (when (sidecar-locals-predicate)
-
-    ;; There is no ideal place to call this function,
-    ;; so ensure the user is informed of bad settings once.
-    (sidecar-locals--report-malformed-paths-once)
-
-    (sidecar-locals--apply
-      (file-name-directory (buffer-file-name)) major-mode
-      (lambda (filepath)
-        ;; Errors here cause the file not to open,
-        ;; report them as messages instead.
-        (condition-case-unless-debug err
-          (load filepath :nomessage t)
-          (error (message "sidecar-locals: error %s in %S" (error-message-string err) filepath))))
-      ;; Only run for files that exist.
-      nil)))
-
 (defun sidecar-locals-predicate ()
   "Check if `sidecar-locals' should run."
   (and
@@ -356,6 +337,38 @@ When NO-TEST is non-nil checking for existing paths is disabled."
           (not (funcall sidecar-locals-ignore-buffer (current-buffer))))
         (t
           nil)))))
+
+(defun sidecar-locals--apply-all-for-directory (buffer-directory)
+  "Apply sidecar-locals for BUFFER-DIRECTORY."
+  ;; There is no ideal place to call this function,
+  ;; so ensure the user is informed of bad settings once.
+  (sidecar-locals--report-malformed-paths-once)
+
+  (sidecar-locals--apply
+    buffer-directory major-mode
+    (lambda (filepath)
+      ;; Errors here cause the file not to open,
+      ;; report them as messages instead.
+      (condition-case-unless-debug err
+        (load filepath :nomessage t)
+        (error (message "sidecar-locals: error %s in %S" (error-message-string err) filepath))))
+    ;; Only run for files that exist.
+    nil))
+
+(defun sidecar-locals-hook ()
+  "Load `sidecar-locals' files hook."
+  (when (sidecar-locals-predicate)
+    (sidecar-locals--apply-all-for-directory (file-name-directory (buffer-file-name)))))
+
+;; For non-file buffers to run sidecar-locals, as is done for dir-locals.
+;; There is no hook for this case, piggyback on dir-locals.
+;;
+;; Needed DIRED to run sidecar-locals when changing directories, see #8.
+(defun sidecar-locals--dir-locals-for-non-file-buffers-advice ()
+  "Load `sidecar-locals', advice for dir-locals (non-file buffer hack)."
+  (when (sidecar-locals-predicate)
+    ;; By convention, the default directory is expected to be used in this case.
+    (sidecar-locals--apply-all-for-directory default-directory)))
 
 
 ;; ---------------------------------------------------------------------------
@@ -482,13 +495,19 @@ This creates a buffer with links that visit that file."
   "Turn on option `sidecar-locals-mode' globally."
   (setq sidecar-locals--last-checked-paths nil)
   (add-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil nil)
-  (add-hook 'find-file-hook #'sidecar-locals-hook nil nil))
+  (add-hook 'find-file-hook #'sidecar-locals-hook nil nil)
+
+  (advice-add 'hack-dir-local-variables-non-file-buffer
+    :after #'sidecar-locals--dir-locals-for-non-file-buffers-advice))
 
 (defun sidecar-locals--mode-disable ()
   "Turn off option `sidecar-locals-mode' globally."
   (setq sidecar-locals--last-checked-paths nil)
   (remove-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil)
-  (remove-hook 'find-file-hook #'sidecar-locals-hook nil))
+  (remove-hook 'find-file-hook #'sidecar-locals-hook nil)
+
+  (advice-remove 'hack-dir-local-variables-non-file-buffer
+    #'sidecar-locals--dir-locals-for-non-file-buffers-advice))
 
 ;;;###autoload
 (define-minor-mode sidecar-locals-mode
