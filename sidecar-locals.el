@@ -180,12 +180,25 @@ This is done without adjusting trailing slashes or following links."
     ;; Expand user `~' and default directory.
     (expand-file-name path)))
 
+(defun sidecar-locals--safe-expand-file-name (path)
+  "Run a restricted `expand-file-name' on PATH."
+  (when (not (string-empty-p path))
+    (let ((ch (aref path 0)))
+      ;; Currently only expand `~`.
+      (cond
+        ((eq ch ?~)
+          (when (string-prefix-p (file-name-as-directory "~") path)
+            (setq path (concat (expand-file-name "~") (substring path 1))))))))
+  path)
+
 
 ;; ---------------------------------------------------------------------------
 ;; Internal Implementation Functions
 
-(defun sidecar-locals--trusted-p (dir)
-  "Check if DIR should be trusted (including any of it's parent directories).
+(defun sidecar-locals--trusted-p (dir path-trust)
+  "Check if DIR should be trusted, this includes any of it's parent directories.
+PATH-TRUST is cons cell: (paths-deny . paths-allow)
+derived from `sidecar-locals-paths-deny' & `sidecar-locals-paths-allow'.
 
 Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
   ;; When `dir' is "/a/b/c/", check in the following order:
@@ -200,7 +213,9 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
   (let
     (
       (result nil)
-      (is-first t))
+      (is-first t)
+      (paths-deny (car path-trust))
+      (paths-allow (cdr path-trust)))
     (while (and dir (null result))
       (let
         (
@@ -211,9 +226,9 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
               (t
                 (concat dir "*")))))
         (cond
-          ((member dir-test sidecar-locals-paths-deny)
+          ((member dir-test paths-deny)
             (setq result -1))
-          ((member dir-test sidecar-locals-paths-allow)
+          ((member dir-test paths-allow)
             (setq result 1))
           (t
             (unless is-first
@@ -221,9 +236,9 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
       (setq is-first nil))
     result))
 
-(defun sidecar-locals--trusted-p-with-warning (dir)
-  "Check if DIR should be trusted, warn if it's not configured."
-  (let ((trust (sidecar-locals--trusted-p dir)))
+(defun sidecar-locals--trusted-p-with-warning (dir path-trust)
+  "Check if DIR should be trusted by PATH-TRUST, warn if it's not configured."
+  (let ((trust (sidecar-locals--trusted-p dir path-trust)))
     (cond
       ((eq trust 1)
         t)
@@ -254,13 +269,19 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   (setq cwd (sidecar-locals--canonicalize-path cwd))
 
   (let*
-    ( ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
+    ( ;; Expand user paths (safely).
+      (path-trust
+        (cons
+          (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-deny)
+          (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-allow)))
+
+      ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
       (dominating-files
         (delete nil
           (mapcar
             (lambda (dir-base)
               (cond
-                ((or no-test (sidecar-locals--trusted-p-with-warning dir-base))
+                ((or no-test (sidecar-locals--trusted-p-with-warning dir-base path-trust))
                   (file-name-as-directory dir-base))
                 (t
                   nil)))

@@ -80,6 +80,7 @@ Customization
 
    - The trailing slash is needed on each path.
    - A directory and all it's subdirectories can be matched by adding a ``*`` to the end.
+   - Support expanding ``~`` prefix to the HOME directory.
 
    Example:
 
@@ -87,7 +88,8 @@ Customization
 
       (setq sidecar-locals-paths-allow
             (list "/my/repositories/project/"
-                  "/my/personal/projects/*"))
+                  "/my/personal/projects/*"
+                  "~/other_project/*"))
 
 ``sidecar-locals-paths-deny`` (nil)
    Paths to disallow, setting this suppresses warnings when untrusted paths are found.

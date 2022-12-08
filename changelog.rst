@@ -3,6 +3,9 @@
 Change Log
 ##########
 
+- 2022-12-09
+  - Add support for expanding ``~`` to the users HOME directory for
+    ``sidecar-locals-paths-allow`` & ``sidecar-locals-paths-deny``.
 
 - 2022-12-08
   - Add support for non-file buffers such as ``dired``, so changing directories may run sidecar-locals,
