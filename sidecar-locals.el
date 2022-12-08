@@ -459,10 +459,16 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
 (defun sidecar-locals--buffer-report-impl ()
   "Implementation of `sidecar-locals-report'."
-  (let
+  (let*
     (
       (buf (get-buffer-create "*sidecar-locals-report*"))
       (filepath (buffer-file-name))
+      (directory
+        (cond
+          (filepath
+            (file-name-directory filepath))
+          (t
+            default-directory)))
       (map (make-sparse-keymap))
 
       ;; Called when a file-path is clicked (access the click from EVENT).
@@ -474,8 +480,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
               (pos (posn-point (event-end event)))
               (loc (get-text-property pos 'loc)))
             (find-file loc)))))
-    (unless filepath
-      (error "Your buffer is not associated with a file, no sidecar-locals apply"))
+
     (define-key map [mouse-2] buffer-find-file-on-click-fn)
     (define-key map [mouse-1] buffer-find-file-on-click-fn)
 
@@ -483,11 +488,11 @@ When NO-TEST is non-nil checking for existing paths is disabled."
       (setq buffer-read-only nil)
       (erase-buffer)
       (insert (propertize "Sidecar locals applicable to:" 'face 'font-lock-doc-face) "\n")
-      (insert filepath "\n\n")
+      (insert (or filepath directory) "\n\n")
       (insert (propertize "Click to edit, q to quit:\n" 'face 'font-lock-doc-face)))
 
     (sidecar-locals--apply
-      (file-name-directory filepath) major-mode
+      directory major-mode
       (lambda (filepath)
         (with-current-buffer buf (sidecar-locals--buffer-insert-filepath filepath map)))
       t)
