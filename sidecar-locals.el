@@ -277,7 +277,8 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
       ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
       (dominating-files
-        (delete nil
+        (delete
+          nil
           (mapcar
             (lambda (dir-base)
               (cond
@@ -403,8 +404,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
         (let ((path-no-star (string-remove-suffix "*" path)))
           (let ((path-no-star-as-dir (file-name-as-directory path-no-star)))
             (unless (string-equal path-no-star path-no-star-as-dir)
-              (message
-                "sidecar-locals: %s path must end with a slash (and optional \"*\"): %S"
+              (message "sidecar-locals: %s path must end with a slash (and optional \"*\"): %S"
                 (symbol-name var)
                 path)
               (setq has-error t))))))
@@ -434,8 +434,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   "Insert FILEPATH as a clickable link using key-map MAP in a buffer."
   (let ((found (file-exists-p filepath)))
     (insert
-      (propertize
-        filepath
+      (propertize filepath
         'face
         (cond
           (found
@@ -494,7 +493,8 @@ When NO-TEST is non-nil checking for existing paths is disabled."
     (sidecar-locals--apply
       directory major-mode
       (lambda (filepath)
-        (with-current-buffer buf (sidecar-locals--buffer-insert-filepath filepath map)))
+        (with-current-buffer buf
+          (sidecar-locals--buffer-insert-filepath filepath map)))
       t)
     (pop-to-buffer buf)
     (view-mode-enter nil (lambda (buf) (kill-buffer buf)))))
@@ -523,7 +523,8 @@ This creates a buffer with links that visit that file."
   (add-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil nil)
   (add-hook 'find-file-hook #'sidecar-locals-hook nil nil)
 
-  (advice-add 'hack-dir-local-variables-non-file-buffer
+  (advice-add
+    'hack-dir-local-variables-non-file-buffer
     :after #'sidecar-locals--dir-locals-for-non-file-buffers-advice))
 
 (defun sidecar-locals--mode-disable ()
@@ -532,7 +533,8 @@ This creates a buffer with links that visit that file."
   (remove-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil)
   (remove-hook 'find-file-hook #'sidecar-locals-hook nil)
 
-  (advice-remove 'hack-dir-local-variables-non-file-buffer
+  (advice-remove
+    'hack-dir-local-variables-non-file-buffer
     #'sidecar-locals--dir-locals-for-non-file-buffers-advice))
 
 ;;;###autoload
