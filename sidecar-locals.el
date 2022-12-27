@@ -114,13 +114,12 @@ For example: \"/a/b/c\" explodes to (\"/\" \"a/\" \"b/\" \"c/\")"
   (let ((paths (list)))
     (while dir
       (let ((parent (sidecar-locals--parent-dir-or-nil-with-slash dir)))
-        (push
-          (cond
-            (parent
-              (substring dir (length parent)))
-            (t
-              dir))
-          paths)
+        (push (cond
+               (parent
+                (substring dir (length parent)))
+               (t
+                dir))
+              paths)
         (setq dir parent)))
     paths))
 
@@ -141,11 +140,11 @@ PATH must be an expanded directory as it is not interpreted."
     (while path
       (let ((path-test (concat path name)))
         (cond
-          ((file-exists-p path-test)
-            (setq result path)
-            (setq path nil))
-          (t
-            (setq path (sidecar-locals--parent-dir-or-nil-with-slash path))))))
+         ((file-exists-p path-test)
+          (setq result path)
+          (setq path nil))
+         (t
+          (setq path (sidecar-locals--parent-dir-or-nil-with-slash path))))))
     result))
 
 (defun sidecar-locals--locate-dominating-files (path locate)
@@ -155,11 +154,11 @@ Start with the top-most path."
     (while path
       (let ((test (sidecar-locals--locate-dominating-file-simple path locate)))
         (cond
-          (test
-            (push test path-list)
-            (setq path (sidecar-locals--parent-dir-or-nil test)))
-          (t
-            (setq path nil)))))
+         (test
+          (push test path-list)
+          (setq path (sidecar-locals--parent-dir-or-nil test)))
+         (t
+          (setq path nil)))))
     path-list))
 
 (defun sidecar-locals--canonicalize-path (path)
@@ -186,9 +185,9 @@ This is done without adjusting trailing slashes or following links."
     (let ((ch (aref path 0)))
       ;; Currently only expand `~`.
       (cond
-        ((eq ch ?~)
-          (when (string-prefix-p (file-name-as-directory "~") path)
-            (setq path (concat (expand-file-name "~") (substring path 1))))))))
+       ((eq ch ?~)
+        (when (string-prefix-p (file-name-as-directory "~") path)
+          (setq path (concat (expand-file-name "~") (substring path 1))))))))
   path)
 
 
@@ -210,29 +209,25 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
 
   ;; Note that `dir' should be derived from a path that has been processed using
   ;; `sidecar-locals--canonicalize-path' to ensure the comparisons are valid.
-  (let
-    (
-      (result nil)
-      (is-first t)
-      (paths-deny (car path-trust))
-      (paths-allow (cdr path-trust)))
+  (let ((result nil)
+        (is-first t)
+        (paths-deny (car path-trust))
+        (paths-allow (cdr path-trust)))
     (while (and dir (null result))
-      (let
-        (
-          (dir-test
-            (cond
+      (let ((dir-test
+             (cond
               (is-first
-                dir)
+               dir)
               (t
-                (concat dir "*")))))
+               (concat dir "*")))))
         (cond
-          ((member dir-test paths-deny)
-            (setq result -1))
-          ((member dir-test paths-allow)
-            (setq result 1))
-          (t
-            (unless is-first
-              (setq dir (sidecar-locals--parent-dir-or-nil-with-slash dir))))))
+         ((member dir-test paths-deny)
+          (setq result -1))
+         ((member dir-test paths-allow)
+          (setq result 1))
+         (t
+          (unless is-first
+            (setq dir (sidecar-locals--parent-dir-or-nil-with-slash dir))))))
       (setq is-first nil))
     result))
 
@@ -240,18 +235,18 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
   "Check if DIR should be trusted by PATH-TRUST, warn if it's not configured."
   (let ((trust (sidecar-locals--trusted-p dir path-trust)))
     (cond
-      ((eq trust 1)
-        t)
-      ((eq trust -1)
-        nil)
-      (t
-        (progn
-          (message
-            (concat
-              "sidecar-locals: un-trusted path %S, "
-              "add to `sidecar-locals-paths-allow' or `sidecar-locals-paths-deny' to silence this message.")
-            dir)
-          nil)))))
+     ((eq trust 1)
+      t)
+     ((eq trust -1)
+      nil)
+     (t
+      (progn
+        (message
+         (concat
+          "sidecar-locals: un-trusted path %S, "
+          "add to `sidecar-locals-paths-allow' or `sidecar-locals-paths-deny' to silence this message.")
+         dir)
+        nil)))))
 
 (defun sidecar-locals--apply (cwd mode-base fn no-test)
   "Run FN on all files in `.sidecar-locals' in CWD.
@@ -269,40 +264,38 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   (setq cwd (sidecar-locals--canonicalize-path cwd))
 
   (let*
-    ( ;; Expand user paths (safely).
-      (path-trust
+      ( ;; Expand user paths (safely).
+       (path-trust
         (cons
-          (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-deny)
-          (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-allow)))
+         (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-deny)
+         (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-allow)))
 
-      ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
-      (dominating-files
+       ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
+       (dominating-files
         (delete
-          nil
-          (mapcar
-            (lambda (dir-base)
-              (cond
-                ((or no-test (sidecar-locals--trusted-p-with-warning dir-base path-trust))
-                  (file-name-as-directory dir-base))
-                (t
-                  nil)))
-            (sidecar-locals--locate-dominating-files cwd sidecar-locals-dir-name))))
+         nil
+         (mapcar
+          (lambda (dir-base)
+            (cond
+             ((or no-test (sidecar-locals--trusted-p-with-warning dir-base path-trust))
+              (file-name-as-directory dir-base))
+             (t
+              nil)))
+          (sidecar-locals--locate-dominating-files cwd sidecar-locals-dir-name))))
 
-      ;; Only create this list if there are known directories to scan.
-      (major-mode-list
+       ;; Only create this list if there are known directories to scan.
+       (major-mode-list
         (cond
-          (dominating-files
-            (sidecar-locals--all-major-modes-as-list mode-base))
-          (t
-            nil))))
+         (dominating-files
+          (sidecar-locals--all-major-modes-as-list mode-base))
+         (t
+          nil))))
 
     ;; Support multiple `sidecar-locals' parent paths.
     (dolist (dir-base dominating-files)
-      (let*
-        (
-          (dir-root (concat dir-base (file-name-as-directory sidecar-locals-dir-name)))
-          (dir-iter dir-root)
-          (dir-tail-list (sidecar-locals--path-explode (substring cwd (length dir-base)))))
+      (let* ((dir-root (concat dir-base (file-name-as-directory sidecar-locals-dir-name)))
+             (dir-iter dir-root)
+             (dir-tail-list (sidecar-locals--path-explode (substring cwd (length dir-base)))))
 
         ;; Handle all directories as well as files next to the `sidecar-locals-dir-name'.
         ;; All modes.
@@ -344,21 +337,20 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 (defun sidecar-locals-predicate ()
   "Check if `sidecar-locals' should run."
   (and
-    ;; Not in the mini-buffer.
-    (not (minibufferp))
-    ;; Not a special mode (package list, tabulated data ... etc)
-    ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
-    (not (derived-mode-p 'special-mode))
-    ;; Not explicitly ignored.
-    (not (memq major-mode sidecar-locals-ignore-modes))
-    ;; Optionally check if a function is used.
-    (or
-      (null sidecar-locals-ignore-buffer)
-      (cond
+   ;; Not in the mini-buffer.
+   (not (minibufferp))
+   ;; Not a special mode (package list, tabulated data ... etc)
+   ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
+   (not (derived-mode-p 'special-mode))
+   ;; Not explicitly ignored.
+   (not (memq major-mode sidecar-locals-ignore-modes))
+   ;; Optionally check if a function is used.
+   (or (null sidecar-locals-ignore-buffer)
+       (cond
         ((functionp sidecar-locals-ignore-buffer)
-          (not (funcall sidecar-locals-ignore-buffer (current-buffer))))
+         (not (funcall sidecar-locals-ignore-buffer (current-buffer))))
         (t
-          nil)))))
+         nil)))))
 
 (defun sidecar-locals--apply-all-for-directory (buffer-directory)
   "Apply sidecar-locals for BUFFER-DIRECTORY."
@@ -367,15 +359,15 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   (sidecar-locals--report-malformed-paths-once)
 
   (sidecar-locals--apply
-    buffer-directory major-mode
-    (lambda (filepath)
-      ;; Errors here cause the file not to open,
-      ;; report them as messages instead.
-      (condition-case-unless-debug err
-        (load filepath :nomessage t)
-        (error (message "sidecar-locals: error %s in %S" (error-message-string err) filepath))))
-    ;; Only run for files that exist.
-    nil))
+   buffer-directory major-mode
+   (lambda (filepath)
+     ;; Errors here cause the file not to open,
+     ;; report them as messages instead.
+     (condition-case-unless-debug err
+         (load filepath :nomessage t)
+       (error (message "sidecar-locals: error %s in %S" (error-message-string err) filepath))))
+   ;; Only run for files that exist.
+   nil))
 
 (defun sidecar-locals-hook ()
   "Load `sidecar-locals' files hook."
@@ -405,8 +397,8 @@ When NO-TEST is non-nil checking for existing paths is disabled."
           (let ((path-no-star-as-dir (file-name-as-directory path-no-star)))
             (unless (string-equal path-no-star path-no-star-as-dir)
               (message "sidecar-locals: %s path must end with a slash (and optional \"*\"): %S"
-                (symbol-name var)
-                path)
+                       (symbol-name var)
+                       path)
               (setq has-error t))))))
     has-error))
 
@@ -416,15 +408,13 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   ;; without changing the start of the list, so it's not fool-proof.
   ;; Just a hint to users who have invalid configuration.
   (pcase-let ((`(,prev-paths-allow . ,prev-paths-deny) sidecar-locals--last-checked-paths))
-    (unless
-      (and
-        (eq prev-paths-allow sidecar-locals-paths-allow)
-        (eq prev-paths-deny sidecar-locals-paths-deny))
+    (unless (and (eq prev-paths-allow sidecar-locals-paths-allow)
+                 (eq prev-paths-deny sidecar-locals-paths-deny))
       (unless (sidecar-locals--report-malformed-paths)
         ;; When there are no errors - don't check again unless the paths change.
         ;; Otherwise report whenever a new file is opened (so the user doesn't miss the warning).
         (setq sidecar-locals--last-checked-paths
-          (cons sidecar-locals-paths-allow sidecar-locals-paths-deny))))))
+              (cons sidecar-locals-paths-allow sidecar-locals-paths-deny))))))
 
 
 ;; ---------------------------------------------------------------------------
@@ -434,21 +424,21 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   "Insert FILEPATH as a clickable link using key-map MAP in a buffer."
   (let ((found (file-exists-p filepath)))
     (insert
-      (propertize filepath
-        'face
-        (cond
-          (found
-            'success)
-          (t
-            'default))
-        'mouse-face
-        'highlight
-        'help-echo
-        "click to visit this file in other window"
-        'keymap
-        map
-        'loc
-        filepath))
+     (propertize filepath
+                 'face
+                 (cond
+                  (found
+                   'success)
+                  (t
+                   'default))
+                 'mouse-face
+                 'highlight
+                 'help-echo
+                 "click to visit this file in other window"
+                 'keymap
+                 map
+                 'loc
+                 filepath))
 
     (when found
       (insert (propertize " [found]" 'face 'success)))
@@ -458,27 +448,23 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
 (defun sidecar-locals--buffer-report-impl ()
   "Implementation of `sidecar-locals-report'."
-  (let*
-    (
-      (buf (get-buffer-create "*sidecar-locals-report*"))
-      (filepath (buffer-file-name))
-      (directory
-        (cond
-          (filepath
+  (let* ((buf (get-buffer-create "*sidecar-locals-report*"))
+         (filepath (buffer-file-name))
+         (directory
+          (cond
+           (filepath
             (file-name-directory filepath))
-          (t
+           (t
             default-directory)))
-      (map (make-sparse-keymap))
+         (map (make-sparse-keymap))
 
-      ;; Called when a file-path is clicked (access the click from EVENT).
-      (buffer-find-file-on-click-fn
-        (lambda (event)
-          (interactive "e")
-          (let*
-            (
-              (pos (posn-point (event-end event)))
-              (loc (get-text-property pos 'loc)))
-            (find-file loc)))))
+         ;; Called when a file-path is clicked (access the click from EVENT).
+         (buffer-find-file-on-click-fn
+          (lambda (event)
+            (interactive "e")
+            (let* ((pos (posn-point (event-end event)))
+                   (loc (get-text-property pos 'loc)))
+              (find-file loc)))))
 
     (define-key map [mouse-2] buffer-find-file-on-click-fn)
     (define-key map [mouse-1] buffer-find-file-on-click-fn)
@@ -491,11 +477,11 @@ When NO-TEST is non-nil checking for existing paths is disabled."
       (insert (propertize "Click to edit, q to quit:\n" 'face 'font-lock-doc-face)))
 
     (sidecar-locals--apply
-      directory major-mode
-      (lambda (filepath)
-        (with-current-buffer buf
-          (sidecar-locals--buffer-insert-filepath filepath map)))
-      t)
+     directory major-mode
+     (lambda (filepath)
+       (with-current-buffer buf
+         (sidecar-locals--buffer-insert-filepath filepath map)))
+     t)
     (pop-to-buffer buf)
     (view-mode-enter nil (lambda (buf) (kill-buffer buf)))))
 
@@ -524,8 +510,8 @@ This creates a buffer with links that visit that file."
   (add-hook 'find-file-hook #'sidecar-locals-hook nil nil)
 
   (advice-add
-    'hack-dir-local-variables-non-file-buffer
-    :after #'sidecar-locals--dir-locals-for-non-file-buffers-advice))
+   'hack-dir-local-variables-non-file-buffer
+   :after #'sidecar-locals--dir-locals-for-non-file-buffers-advice))
 
 (defun sidecar-locals--mode-disable ()
   "Turn off option `sidecar-locals-mode' globally."
@@ -534,8 +520,8 @@ This creates a buffer with links that visit that file."
   (remove-hook 'find-file-hook #'sidecar-locals-hook nil)
 
   (advice-remove
-    'hack-dir-local-variables-non-file-buffer
-    #'sidecar-locals--dir-locals-for-non-file-buffers-advice))
+   'hack-dir-local-variables-non-file-buffer
+   #'sidecar-locals--dir-locals-for-non-file-buffers-advice))
 
 ;;;###autoload
 (define-minor-mode sidecar-locals-mode
@@ -543,10 +529,10 @@ This creates a buffer with links that visit that file."
   :global t
 
   (cond
-    (sidecar-locals-mode
-      (sidecar-locals--mode-enable))
-    (t
-      (sidecar-locals--mode-disable))))
+   (sidecar-locals-mode
+    (sidecar-locals--mode-enable))
+   (t
+    (sidecar-locals--mode-disable))))
 
 (provide 'sidecar-locals)
 ;;; sidecar-locals.el ends here
