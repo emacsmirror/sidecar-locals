@@ -263,33 +263,32 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   ;; Ensure comparisons with `sidecar-locals--trusted-p' occur on an expanded path.
   (setq cwd (sidecar-locals--canonicalize-path cwd))
 
-  (let*
-      ( ;; Expand user paths (safely).
-       (path-trust
-        (cons
-         (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-deny)
-         (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-allow)))
+  (let* ((path-trust
+          ;; Expand user paths (safely).
+          (cons
+           (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-deny)
+           (mapcar #'sidecar-locals--safe-expand-file-name sidecar-locals-paths-allow)))
 
-       ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
-       (dominating-files
-        (delete
-         nil
-         (mapcar
-          (lambda (dir-base)
-            (cond
-             ((or no-test (sidecar-locals--trusted-p-with-warning dir-base path-trust))
-              (file-name-as-directory dir-base))
-             (t
-              nil)))
-          (sidecar-locals--locate-dominating-files cwd sidecar-locals-dir-name))))
-
-       ;; Only create this list if there are known directories to scan.
-       (major-mode-list
-        (cond
+         ;; Collect all trusted paths containing `sidecar-locals-dir-name'.
          (dominating-files
-          (sidecar-locals--all-major-modes-as-list mode-base))
-         (t
-          nil))))
+          (delete
+           nil
+           (mapcar
+            (lambda (dir-base)
+              (cond
+               ((or no-test (sidecar-locals--trusted-p-with-warning dir-base path-trust))
+                (file-name-as-directory dir-base))
+               (t
+                nil)))
+            (sidecar-locals--locate-dominating-files cwd sidecar-locals-dir-name))))
+
+         ;; Only create this list if there are known directories to scan.
+         (major-mode-list
+          (cond
+           (dominating-files
+            (sidecar-locals--all-major-modes-as-list mode-base))
+           (t
+            nil))))
 
     ;; Support multiple `sidecar-locals' parent paths.
     (dolist (dir-base dominating-files)
