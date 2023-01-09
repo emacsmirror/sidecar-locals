@@ -534,4 +534,8 @@ This creates a buffer with links that visit that file."
     (sidecar-locals--mode-disable))))
 
 (provide 'sidecar-locals)
+;; Local Variables:
+;; fill-column: 99
+;; indent-tabs-mode: nil
+;; End:
 ;;; sidecar-locals.el ends here
