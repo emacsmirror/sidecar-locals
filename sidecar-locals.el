@@ -104,8 +104,11 @@ check this buffer.")
   (when dir
     (let ((dir-orig dir))
       (when (and (setq dir (directory-file-name dir)) (setq dir (file-name-directory dir)))
+        ;; The input directory may or not have had a trailing slash, check both, see: #10.
         (unless (string-equal dir-orig dir)
-          (file-name-as-directory dir))))))
+          (setq dir (file-name-as-directory dir))
+          (unless (string-equal dir-orig dir)
+            dir))))))
 
 (defun sidecar-locals--path-explode (dir)
   "Explodes directory DIR.
