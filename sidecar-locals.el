@@ -395,7 +395,13 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   (let ((has-error nil))
     (dolist (var (list 'sidecar-locals-paths-allow 'sidecar-locals-paths-deny))
       (dolist (path (symbol-value var))
-        (let ((path-no-star (string-remove-suffix "*" path)))
+        ;; Inline `string-remove-suffix' to avoid requiring `subr-x'.
+        (let ((path-no-star
+               (cond
+                ((string-suffix-p "*" path)
+                 (substring path 0 -1))
+                (t
+                 path))))
           (let ((path-no-star-as-dir (file-name-as-directory path-no-star)))
             (unless (string-equal path-no-star path-no-star-as-dir)
               (message "sidecar-locals: %s path must end with a slash (and optional \"*\"): %S"
