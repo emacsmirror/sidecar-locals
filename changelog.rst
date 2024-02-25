@@ -3,6 +3,17 @@
 Change Log
 ##########
 
+
+Version 0.2
+===========
+
+- 2024-02-27
+  - Add ``sidecar-locals-root`` macro to access the project path sidecar-locals references.
+
+
+Version 0.1
+===========
+
 - 2022-12-09
   - Add support for expanding ``~`` to the users HOME directory for
     ``sidecar-locals-paths-allow`` & ``sidecar-locals-paths-deny``.

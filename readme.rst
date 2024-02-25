@@ -104,6 +104,19 @@ Customization
    The subdirectory to search for when detecting local settings.
 
 
+Macros
+------
+
+``sidecar-locals-root``
+   A convenience macro that expands to the directory associates with the sidecar-locals file being executed.
+   A trailing slash is ensured.
+
+   This will typically be your projects top-level directory.
+   The macro is for convenience as it's often unnecessarily involved to compute this value.
+   Using this macro avoids having to reference absolute, hard-coded paths within your configuration.
+   Or having to search for the projects top-level directory.
+
+
 Details
 -------
 

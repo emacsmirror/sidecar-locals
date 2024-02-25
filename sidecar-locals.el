@@ -7,7 +7,7 @@
 
 ;; URL: https://codeberg.org/ideasman42/emacs-sidecar-locals
 ;; Keywords: convenience
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "27.1"))
 
 ;;; Commentary:
@@ -87,6 +87,8 @@ check this buffer.")
 ;; When non-nil this is a `cons' cell storing paths-allow & paths-deny.
 (defvar sidecar-locals--last-checked-paths nil)
 
+;; Expanded via `sidecar-locals-root' macro.
+(defvar sidecar-locals--root nil)
 
 ;; ---------------------------------------------------------------------------
 ;; Internal Generic Utilities
@@ -251,6 +253,10 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
          dir)
         nil)))))
 
+(defsubst sidecar-locals--root-impl (path beg end)
+  "Internal function to extract the root from PATH removing BEG & END range."
+  (concat (substring path 0 beg) (substring path end)))
+
 (defun sidecar-locals--apply (cwd mode-base fn no-test)
   "Run FN on all files in `.sidecar-locals' in CWD.
 
@@ -295,9 +301,17 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
     ;; Support multiple `sidecar-locals' parent paths.
     (dolist (dir-base dominating-files)
-      (let* ((dir-root (concat dir-base (file-name-as-directory sidecar-locals-dir-name)))
+      (let* ((dir-name (file-name-as-directory sidecar-locals-dir-name))
+             (dir-root (concat dir-base dir-name))
              (dir-iter dir-root)
-             (dir-tail-list (sidecar-locals--path-explode (substring cwd (length dir-base)))))
+             (dir-tail-list (sidecar-locals--path-explode (substring cwd (length dir-base))))
+             (root-beg (length dir-base))
+             (root-end (+ root-beg (length dir-name))))
+
+        ;; Set to be expanded by the `sidecar-locals-root' macro.
+        ;; Note that let-binding is ignored for macro expansion, so the variable needs to be set.
+        (setq sidecar-locals--root
+              (sidecar-locals--root-impl (concat dir-iter (car dir-tail-list)) root-beg root-end))
 
         ;; Handle all directories as well as files next to the `sidecar-locals-dir-name'.
         ;; All modes.
@@ -319,6 +333,8 @@ When NO-TEST is non-nil checking for existing paths is disabled."
           ;; Slashes are ensured.
           (setq dir-iter (concat dir-iter (pop dir-tail-list)))
 
+          (setq sidecar-locals--root (sidecar-locals--root-impl dir-iter root-beg root-end))
+
           (let ((dir-iter-no-slash (directory-file-name dir-iter)))
             ;; All modes.
             (let ((file-test (concat dir-iter-no-slash "().el")))
@@ -334,7 +350,9 @@ When NO-TEST is non-nil checking for existing paths is disabled."
             ;; Exit loop.
             ;; There is no need to continue past a missing directory,
             ;; as all it's subdirectories will be missing too.
-            (setq dir-tail-list nil)))))))
+            (setq dir-tail-list nil))))
+      ;; Ensure stale values are never used.
+      (setq sidecar-locals--root nil))))
 
 (defun sidecar-locals-predicate ()
   "Check if `sidecar-locals' should run."
@@ -496,6 +514,20 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 
 ;; ---------------------------------------------------------------------------
 ;; Public Functions
+
+;; No need to `autoload' this function as it must run once sidecar locals is running.
+;; Note that it is important this is a macro and not a function as the locally bound variable
+;; would go out of scope for code which is evaluated after the load function runs.
+;; (`lambda' or `with-eval-after-load' for example).
+(defmacro sidecar-locals-root ()
+  "Return the directory sidecar-locals references.
+A trailing slash is ensured.
+This must be called from within a sidecar-locals script or an error will occur."
+  (cond
+   (sidecar-locals--root
+    sidecar-locals--root)
+   (t
+    (error "sidecar-locals-root: macro called outside of sidecar-local context!"))))
 
 ;;;###autoload
 (defun sidecar-locals-report ()
