@@ -546,7 +546,7 @@ This must be called from within a sidecar-locals script or an error will occur."
    (sidecar-locals--root
     sidecar-locals--root)
    (t
-    (error "sidecar-locals-root: macro called outside of sidecar-local context!"))))
+    (error "Macro `sidecar-locals-root' called outside of sidecar-local context!"))))
 
 ;;;###autoload
 (defun sidecar-locals-report ()
