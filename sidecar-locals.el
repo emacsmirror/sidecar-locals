@@ -398,7 +398,8 @@ When NO-TEST is non-nil checking for existing paths is disabled."
      ;; report them as messages instead.
      (condition-case-unless-debug err
          (load filepath :nomessage t)
-       (error (message "sidecar-locals: error %s in %S" (error-message-string err) filepath))))
+       (error
+        (message "sidecar-locals: error %s in %S" (error-message-string err) filepath))))
    ;; Only run for files that exist.
    nil))
 
