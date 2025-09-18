@@ -194,7 +194,8 @@ This is done without adjusting trailing slashes or following links."
 (defun sidecar-locals--safe-expand-file-name (path)
   "Run a restricted `expand-file-name' on PATH."
   (declare (important-return-value t))
-  (when (not (string-empty-p path))
+  ;; Not an empty string.
+  (when (length> path 0)
     (let ((ch (aref path 0)))
       ;; Currently only expand `~`.
       (cond
