@@ -150,7 +150,7 @@ PATH must be an expanded directory as it is not interpreted."
     (while path
       (let ((path-test (concat path name)))
         (cond
-         ((file-exists-p path-test)
+         ((sidecar-locals--safe-file-exists-p path-test)
           (setq result path)
           (setq path nil))
          (t
@@ -202,6 +202,17 @@ This is done without adjusting trailing slashes or following links."
         (when (string-prefix-p (file-name-as-directory "~") path)
           (setq path (concat (expand-file-name "~") (substring path 1))))))))
   path)
+
+(defun sidecar-locals--safe-file-exists-p (filepath)
+  "Safely check if FILEPATH exists, returning nil on error."
+  (condition-case-unless-debug err
+      (file-exists-p filepath)
+    (error
+     ;; Should be rare, so send a message if this fails,
+     ;; otherwise this could cause confusion if existing paths are silently not found.
+     (message "sidecar-locals: error %s checking if %S exists"
+              (error-message-string err)
+              filepath))))
 
 
 ;; ---------------------------------------------------------------------------
@@ -327,12 +338,12 @@ When NO-TEST is non-nil checking for existing paths is disabled."
         ;; Handle all directories as well as files next to the `sidecar-locals-dir-name'.
         ;; All modes.
         (let ((file-test (concat dir-root "().el")))
-          (when (or no-test (file-exists-p file-test))
+          (when (or no-test (sidecar-locals--safe-file-exists-p file-test))
             (funcall fn file-test)))
         ;; Specific modes.
         (dolist (mode major-mode-list)
           (let ((file-test (concat dir-root "(" (symbol-name mode) ").el")))
-            (when (or no-test (file-exists-p file-test))
+            (when (or no-test (sidecar-locals--safe-file-exists-p file-test))
               (funcall fn file-test))))
 
         ;; Happens if the filename is in the same directory as the `sidecar-locals-dir-name'.
@@ -349,15 +360,15 @@ When NO-TEST is non-nil checking for existing paths is disabled."
           (let ((dir-iter-no-slash (directory-file-name dir-iter)))
             ;; All modes.
             (let ((file-test (concat dir-iter-no-slash "().el")))
-              (when (or no-test (file-exists-p file-test))
+              (when (or no-test (sidecar-locals--safe-file-exists-p file-test))
                 (funcall fn file-test)))
             ;; Specific modes.
             (dolist (mode major-mode-list)
               (let ((file-test (concat dir-iter-no-slash "(" (symbol-name mode) ").el")))
-                (when (or no-test (file-exists-p file-test))
+                (when (or no-test (sidecar-locals--safe-file-exists-p file-test))
                   (funcall fn file-test)))))
 
-          (unless (or no-test (file-exists-p dir-iter))
+          (unless (or no-test (sidecar-locals--safe-file-exists-p dir-iter))
             ;; Exit loop.
             ;; There is no need to continue past a missing directory,
             ;; as all it's subdirectories will be missing too.
@@ -467,7 +478,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
 (defun sidecar-locals--buffer-insert-filepath (filepath map)
   "Insert FILEPATH as a clickable link using key-map MAP in a buffer."
   (declare (important-return-value nil))
-  (let ((found (file-exists-p filepath)))
+  (let ((found (sidecar-locals--safe-file-exists-p filepath)))
     (insert
      (propertize filepath
                  'face
