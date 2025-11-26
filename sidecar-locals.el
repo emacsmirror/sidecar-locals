@@ -382,17 +382,17 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   (declare (important-return-value t))
   (and
    ;; Not in the mini-buffer.
-   (not (minibufferp))
+   (null (minibufferp))
    ;; Not a special mode (package list, tabulated data ... etc)
    ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
-   (not (derived-mode-p 'special-mode))
+   (null (derived-mode-p 'special-mode))
    ;; Not explicitly ignored.
-   (not (memq major-mode sidecar-locals-ignore-modes))
+   (null (memq major-mode sidecar-locals-ignore-modes))
    ;; Optionally check if a function is used.
    (or (null sidecar-locals-ignore-buffer)
        (cond
         ((functionp sidecar-locals-ignore-buffer)
-         (not (funcall sidecar-locals-ignore-buffer (current-buffer))))
+         (null (funcall sidecar-locals-ignore-buffer (current-buffer))))
         (t
          nil)))))
 
