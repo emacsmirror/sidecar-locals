@@ -8,7 +8,7 @@
 ;; URL: https://codeberg.org/ideasman42/emacs-sidecar-locals
 ;; Keywords: convenience
 ;; Version: 0.2
-;; Package-Requires: ((emacs "27.1"))
+;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
 
@@ -27,7 +27,7 @@
 ;;   and avoid changes to the global state in a way that might cause unexpected behavior.
 ;;
 
-;;; Usage
+;;; Usage:
 
 ;;
 ;; Write the following code to your .emacs file:
@@ -75,7 +75,6 @@ check this buffer.")
 
 (defcustom sidecar-locals-dir-name ".sidecar-locals"
   "The directory name to discover sidecar-locals in."
-
   :type 'string)
 
 
@@ -220,7 +219,7 @@ This is done without adjusting trailing slashes or following links."
 ;; Internal Implementation Functions
 
 (defun sidecar-locals--trusted-p (dir path-trust)
-  "Check if DIR should be trusted, this includes any of it's parent directories.
+  "Check if DIR should be trusted, this includes any of its parent directories.
 PATH-TRUST is cons cell: (paths-deny . paths-allow)
 derived from `sidecar-locals-paths-deny' & `sidecar-locals-paths-allow'.
 
@@ -267,13 +266,12 @@ Returns: 1 to trust, -1 is untrusted, nil is untrusted and not configured."
      ((eq trust -1)
       nil)
      (t
-      (progn
-        (message
-         (concat
-          "sidecar-locals: un-trusted path %S, "
-          "add to `sidecar-locals-paths-allow' or `sidecar-locals-paths-deny' to silence this message.")
-         dir)
-        nil)))))
+      (message
+       (concat
+        "sidecar-locals: un-trusted path %S, "
+        "add to `sidecar-locals-paths-allow' or `sidecar-locals-paths-deny' to silence this message.")
+       dir)
+      nil))))
 
 (defsubst sidecar-locals--root-impl (path beg end)
   "Internal function to extract the root from PATH removing BEG & END range."
@@ -372,7 +370,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
           (unless (or no-test (sidecar-locals--safe-file-exists-p dir-iter))
             ;; Exit loop.
             ;; There is no need to continue past a missing directory,
-            ;; as all it's subdirectories will be missing too.
+            ;; as all its subdirectories will be missing too.
             (setq dir-tail-list nil))))
       ;; Ensure stale values are never used.
       (setq sidecar-locals--root nil))))
@@ -541,7 +539,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
          (sidecar-locals--buffer-insert-filepath filepath map)))
      t)
     (pop-to-buffer buf)
-    (view-mode-enter nil (lambda (buf) (kill-buffer buf)))))
+    (view-mode-enter nil #'kill-buffer)))
 
 
 ;; ---------------------------------------------------------------------------
@@ -580,8 +578,8 @@ This creates a buffer with links that visit that file."
   "Turn on option `sidecar-locals-mode' globally."
   (declare (important-return-value nil))
   (setq sidecar-locals--last-checked-paths nil)
-  (add-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil nil)
-  (add-hook 'find-file-hook #'sidecar-locals-hook nil nil)
+  (add-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook)
+  (add-hook 'find-file-hook #'sidecar-locals-hook)
 
   (advice-add
    'hack-dir-local-variables-non-file-buffer
@@ -591,8 +589,8 @@ This creates a buffer with links that visit that file."
   "Turn off option `sidecar-locals-mode' globally."
   (declare (important-return-value nil))
   (setq sidecar-locals--last-checked-paths nil)
-  (remove-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook nil)
-  (remove-hook 'find-file-hook #'sidecar-locals-hook nil)
+  (remove-hook 'after-set-visited-file-name-hook #'sidecar-locals-hook)
+  (remove-hook 'find-file-hook #'sidecar-locals-hook)
 
   (advice-remove
    'hack-dir-local-variables-non-file-buffer
