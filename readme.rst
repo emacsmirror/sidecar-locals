@@ -19,13 +19,13 @@ Code Execution
    Unlike dir-locals which requires ``(eval ...)`` blocks which need to be explicitly trusted.
 
    This package runs the emacs-lisp directly,
-   since trust is manged at the path level instead of individual variables.
+   since trust is managed at the path level instead of individual variables.
 
    While both methods are valid, executing code directly is more convenient when the code contains project-level logic
    (where every change to the code doesn't require re-trusting, continually growing the ``custom.el`` file).
 
 Out of Source Configuration
-   Support for configuration outside the project's root directly.
+   Support for configuration outside the project's root directory.
 
    Similar to out-of-source builds, this package supports out-of-source locals so your source repository
    can be kept pristine and your configuration can be stored and versioned separately.
@@ -66,20 +66,20 @@ Usage
 
   This will print a list of files which would be used if found for the current buffer.
 
-- Create one of more of these files, then reload the current buffer for the locals to be detected and applied.
+- Create one or more of these files, then reload the current buffer for the locals to be detected and applied.
 
 
 Customization
 -------------
 
 ``sidecar-locals-ignore-modes`` (nil)
-   Major modes that disable ``sidecar-mode``.
+   Major modes that disable ``sidecar-locals``.
 
 ``sidecar-locals-paths-allow`` (nil)
    A list of strings, each string should be a directory that contains a ``.sidecar-locals`` directory.
 
    - The trailing slash is needed on each path.
-   - A directory and all it's subdirectories can be matched by adding a ``*`` to the end.
+   - A directory and all its subdirectories can be matched by adding a ``*`` to the end.
    - Support expanding ``~`` prefix to the HOME directory.
 
    Example:
@@ -96,9 +96,9 @@ Customization
    This uses the same format as ``sidecar-locals-paths-allow``.
 
 ``sidecar-locals-ignore-buffer`` (nil)
-   When non-nil, ``sidecar-locals`` wont be used for this buffer,
+   When non-nil, ``sidecar-locals`` won't be used for this buffer,
    when this is a callable, it will be called with the current buffer,
-   a nil return value is used to disable.
+   a non-nil return value is used to disable.
 
 ``sidecar-locals-dir-name`` (``.sidecar-locals``)
    The subdirectory to search for when detecting local settings.
@@ -108,7 +108,7 @@ Macros
 ------
 
 ``sidecar-locals-root``
-   A convenience macro that expands to the directory associates with the sidecar-locals file being executed.
+   A convenience macro that expands to the directory associated with the sidecar-locals file being executed.
    A trailing slash is ensured.
 
    This will typically be your projects top-level directory.
