@@ -56,11 +56,11 @@
 
 (defcustom sidecar-locals-paths-allow nil
   "List of trusted paths (must contain trailing slashes)."
-  :type '(repeat string))
+  :type '(repeat directory))
 
 (defcustom sidecar-locals-paths-deny nil
   "List of untrusted paths (must contain trailing slashes)."
-  :type '(repeat string))
+  :type '(repeat directory))
 
 (defcustom sidecar-locals-ignore-modes nil
   "List of major-modes where `sidecar-locals' won't be used."
