@@ -381,7 +381,7 @@ When NO-TEST is non-nil checking for existing paths is disabled."
   (and
    ;; Not in the mini-buffer.
    (null (minibufferp))
-   ;; Not a special mode (package list, tabulated data ... etc)
+   ;; Not a special mode (package list, tabulated data, etc.)
    ;; Instead the buffer is likely derived from `text-mode' or `prog-mode'.
    (null (derived-mode-p 'special-mode))
    ;; Not explicitly ignored.
